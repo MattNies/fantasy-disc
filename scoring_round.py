@@ -1,9 +1,8 @@
-import requests
 import json
 import os
 import urllib.parse
 import requests
-requests.packages.urllib3.disable_warnings() 
+requests.packages.urllib3.disable_warnings()
 
 
 class Scoring:

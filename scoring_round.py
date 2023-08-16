@@ -2,13 +2,15 @@ import json
 import os
 import urllib.parse
 import requests
+
 requests.packages.urllib3.disable_warnings()
 
 
 class Scoring:
     def __init__(self):
 
-        self.points = [100, 66, 60, 53, 46, 40, 33, 30, 26, 23] + [20] * 5 + [16] * 5 + [13] * 5 + [10] * 5 + [6] * 10 + [3] * 10
+        self.points = [100, 66, 60, 53, 46, 40, 33, 30, 26, 23] + [20] * 5 + [16] * 5 + [13] * 5 + [10] * 5 + [
+            6] * 10 + [3] * 10
         self.number_of_finishers_at_place = [0] * len(self.points)
         self.hot_round_points = 5
         self.ace_points = 25
@@ -22,9 +24,10 @@ class Scoring:
         if finish > len(self.points) - 1:
             return 0
         total_points = 0
-        for points in range(finish-1, finish-1+self.number_of_finishers_at_place[finish-1]):
+        for points in range(finish - 1, finish - 1 + self.number_of_finishers_at_place[finish - 1]):
             total_points += self.points[points] if points < len(self.points) else 0
-        return total_points / (1 if self.number_of_finishers_at_place[finish-1] == 0 else self.number_of_finishers_at_place[finish-1])
+        return total_points / (
+            1 if self.number_of_finishers_at_place[finish - 1] == 0 else self.number_of_finishers_at_place[finish - 1])
 
     def add_hot_round_points(self):
         return self.hot_round_points
@@ -38,6 +41,7 @@ class Scoring:
         # 4 in a row = 2
         # etc.
         return self.birdie_streak_points[streak_length - 3]
+
 
 scores = Scoring()
 
@@ -114,7 +118,7 @@ class PlayerResult():
         scores.add_finisher(self.finish_place)
 
     def set_finish_place_points(self):
-        #print(f'{self.player_name} - {self.running_place} - {scores.add_round_finish_points(self.finish_place)}')
+        # print(f'{self.player_name} - {self.running_place} - {scores.add_round_finish_points(self.finish_place)}')
         self.finish_place_points += scores.add_round_finish_points(self.finish_place)
         self.points += self.ace_points
         self.points += self.finish_place_points
@@ -135,7 +139,9 @@ class ScoringRound:
         self.event_modifier = event_modifier
         self.competitors = []
 
-        response = requests.get(f'https://www.pdga.com/apps/tournament/live-api/live_results_fetch_event.php?TournID={event_id}'.replace(' ', '%20'), verify=False)
+        response = requests.get(
+            f'https://www.pdga.com/apps/tournament/live-api/live_results_fetch_event.php?TournID={event_id}'.replace(
+                ' ', '%20'), verify=False)
 
         if response.status_code != 200:
             raise Exception('Cannot get scoring info')
@@ -161,10 +167,12 @@ class ScoringRound:
 
             round_count += 1
 
-            response = requests.get(f'https://www.pdga.com/apps/tournament/live-api/live_results_fetch_round.php?TournID={event_id}&Division=MPO&Round={round["Label"]}'.replace(' ', '%20'), verify=False)
+            response = requests.get(
+                f'https://www.pdga.com/apps/tournament/live-api/live_results_fetch_round.php?TournID={event_id}&Division=MPO&Round={round["Label"]}'.replace(
+                    ' ', '%20'), verify=False)
             round_scores = response.json()
 
-            #print(f'https://www.pdga.com/apps/tournament/live-api/live_results_fetch_round.php?TournID={event_id}&Division=MPO&Round={round["Label"]}'.replace(' ', '%20'))
+            # print(f'https://www.pdga.com/apps/tournament/live-api/live_results_fetch_round.php?TournID={event_id}&Division=MPO&Round={round["Label"]}'.replace(' ', '%20'))
             hot_round = 10000
             hot_round_players = []
 
@@ -209,7 +217,8 @@ class ScoringRound:
 
     def competitor_results(self, competitor):
         self.competitors.append(competitor)
-        competitor_score, player_event_scores = competitor.get_round_total(self.player_results, self.event_modifier, self.event_id)
+        competitor_score, player_event_scores = competitor.get_round_total(self.player_results, self.event_modifier,
+                                                                           self.event_id)
         self.competitor_players_in_event += player_event_scores
         self.competitor_event_scores[competitor.name] = competitor_score
         return competitor_score
@@ -224,7 +233,8 @@ class ScoringRound:
 
         filename = f'./events/details/{self.event_date}-{self.event_name}.csv'
         with open(filename, 'w+') as f:
-            f.write('Finish Place,Player,PDGA Number,Event Modifier,Competitor,Player Tournament Status,Player Roster Status,Finish Place Points,Hot Rounds,Hot Round Points,Ace Points,Birdie Streaks,Birdie Streak Points,Total Points,\n')
+            f.write(
+                'Finish Place,Player,PDGA Number,Event Modifier,Competitor,Player Tournament Status,Player Roster Status,Finish Place Points,Hot Rounds,Hot Round Points,Ace Points,Birdie Streaks,Birdie Streak Points,Total Points,\n')
             self.competitor_players_in_event.sort(key=lambda x: x['points'], reverse=True)
             for competitor in self.competitor_players_in_event:
                 if competitor['pdga_number'] not in list(self.player_results.keys()):
@@ -271,6 +281,6 @@ class ScoringRound:
 
             competitor_list.sort(key=lambda x: x['points_total'], reverse=True)
             for rank, competitor in enumerate(competitor_list):
-                f.write(f'{rank+1},{competitor["name"]},{self.event_modifier},{competitor["points_total"]}\n')
+                f.write(f'{rank + 1},{competitor["name"]},{self.event_modifier},{competitor["points_total"]}\n')
 
         print(f'Wrote: {filename}')

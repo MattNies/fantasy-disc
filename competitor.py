@@ -1,6 +1,5 @@
 
 
-
 class Competitor:
     def __init__(self, name, player_pdga_numbers, autosub_pdga, player_pdga_numbers_inactive):
 
